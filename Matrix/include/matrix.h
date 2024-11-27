@@ -90,8 +90,7 @@ protected:
     }
 };
 
-template <matrix_elem T>
-class matrix_t final: private matrix_buff<T> {
+template <matrix_elem T> class matrix_t : private matrix_buff<T> {
     using matrix_buff<T>::data_;
     using matrix_buff<T>::sz_;
     using matrix_buff<T>::used_;
@@ -140,7 +139,8 @@ public:
         return det_.value();
     }
 
-    explicit matrix_t(size_t n, const T &val = T(0)) : matrix_buff<T>(n * n), n_(n)
+    explicit matrix_t(std::size_t n, const T &val = T(0))
+        : matrix_buff<T>(n * n), n_(n)
     {
         for (std::size_t i = 0; i < sz_; ++i)
         {
@@ -160,6 +160,22 @@ public:
         } 
         assert(used_ == sz_);
     }
+
+    template <typename RandIt>
+    explicit matrix_t(RandIt start, RandIt fin)
+        : matrix_buff<T>(std::distance(start, fin)),
+          n_(std::sqrt(std::distance(start, fin)))
+    {
+        for (std::size_t i = 0, dist = std::distance(start, fin); i < dist;
+             ++i, ++start)
+        {
+            this->construct(data_ + i, *start);
+            ++used_;
+        }
+        assert(used_ == sz_);
+    }
+
+    virtual ~matrix_t() = default;
 
 #if 0
     explicit matrix_t(const diagonal_input<T> &inpt) : matrix_buff<T>(inpt.size()), n_(inpt.size())
