@@ -144,7 +144,7 @@ public:
     {
         for (std::size_t i = 0; i < sz_; ++i)
         {
-            construct(data_ + i, val);
+            this->construct(data_ + i, val);
             ++used_;
         }
         assert(used_ == sz_);
@@ -186,11 +186,11 @@ public:
         std::size_t diag_n = 0;
         for (auto start = inpt.cbegin(); start != inpt_back; ++start, ++diag_n)
         {
-            construct(access(diag_n, diag_n), *start);
+            this->construct(access(diag_n, diag_n), *start);
             for (std::size_t i = 0; i < n_; ++i)
-                construct(access(diag_n, i + 1), T(0));
+                this->construct(access(diag_n, i + 1), T(0));
         }
-        construct(access(n_ - 1, n_ - 1), *inpt_back);
+        this->construct(access(n_ - 1, n_ - 1), *inpt_back);
 
         assert(used_ == sz_);
     }
@@ -269,7 +269,9 @@ public:
 private:
     T make_non_zero_row(std::size_t row_id) noexcept
     {
-        for (std::size_t i = row_id; i < n_; ++i)
+        if (*access(row_id, row_id) != T(0))
+            return T(1);
+        for (std::size_t i = row_id + 1; i < n_; ++i)
         {
             if (*access(i, row_id) != T(0))
             {
@@ -327,6 +329,9 @@ public:
     {
         if (det_.has_value())
             return det_.value();
+        if (n_ == 0)
+            throw MatrExcepts::no_det(
+                "Can't calculate empty matrix determinant.");
         calculate_det_echelon();
         return det_.value();
     }
