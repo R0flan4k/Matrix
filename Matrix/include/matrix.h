@@ -214,7 +214,7 @@ public:
     iterator       end()   noexcept {return data_ + sz_;}
     const_iterator end()   const noexcept {return data_ + sz_;}
 
-private:
+protected:
     class row_t final{
         T* base_;
     
@@ -257,6 +257,13 @@ private:
     {
         for (std::size_t i = 0; i < n_; ++i)
             *access(lhs, i) -= *access(rhs, i);
+    }
+
+    template <typename RandomIt>
+    void set_col(std::size_t col_id, RandomIt start, RandomIt fin)
+    {
+        for (std::size_t i = 0; i < n_; ++i, ++start)
+            *access(i, col_id) = *start;
     }
 
 public:
