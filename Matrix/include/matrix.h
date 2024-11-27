@@ -91,11 +91,12 @@ protected:
 };
 
 template <matrix_elem T> class matrix_t : private matrix_buff<T> {
+protected:
     using matrix_buff<T>::data_;
     using matrix_buff<T>::sz_;
     using matrix_buff<T>::used_;
     size_t n_;
-    std::optional<T> det_;
+    // std::optional<T> det_;
 
 public:
     typedef T* iterator;
@@ -109,7 +110,8 @@ protected:
     }
 
 #ifndef NDEBUG
-    void dump_internal() const
+public:
+    virtual void dump_internal() const
     {
         for (std::size_t i = 0; i < sz_; ++i)
         {
@@ -133,11 +135,11 @@ protected:
 
 public:
     std::size_t rank() const {return n_;}
-    const T& det() const
-    {
-        if (!det_.has_value()) throw MatrExcepts::no_det("The determinant isn't calculated.");
-        return det_.value();
-    }
+    // const T& det() const
+    // {
+    //     if (!det_.has_value()) throw MatrExcepts::no_det("The determinant
+    //     isn't calculated."); return det_.value();
+    // }
 
     explicit matrix_t(std::size_t n, const T &val = T(0))
         : matrix_buff<T>(n * n), n_(n)
@@ -201,12 +203,14 @@ public:
         if (inpt.size() != sz_) throw MatrExcepts::wrong_init_list("Wrong size of initializer list.");
         std::move(inpt.cbegin(), inpt.cend(), data_)
         assert(used_ == sz_);
+        return *this;
     }
 
     matrix_t& operator*(const T &val) noexcept 
     {
         for (std::size_t i = 0; i < sz_; ++i)
             data_[i] *= val;
+        return *this;
     }
 
     void swap_rows(std::size_t lhs, std::size_t rhs) noexcept
@@ -241,32 +245,6 @@ public:
             *access(i, col_id) = *start;
     }
 
-    iterator begin() noexcept { return data_; }
-    const_iterator begin() const noexcept { return data_; }
-    iterator end() noexcept { return data_ + sz_; }
-    const_iterator end() const noexcept { return data_ + sz_; }
-
-protected:
-    class row_t final {
-        T *base_;
-
-    public:
-        row_t(T *base) noexcept : base_(base) {}
-
-        const T *base() const { return base_; }
-
-        T operator[](std::size_t off) const { return *(base_ + off); }
-
-        T &operator[](std::size_t off) { return *(base_ + off); }
-    };
-
-public:
-    row_t operator[](std::size_t off) const
-    {
-        return row_t{access(off), n_};
-    }
-
-private:
     T make_non_zero_row(std::size_t row_id) noexcept
     {
         if (*access(row_id, row_id) != T(0))
@@ -317,9 +295,72 @@ private:
         return res;
     }
 
+    iterator begin() noexcept { return data_; }
+    const_iterator begin() const noexcept { return data_; }
+    iterator end() noexcept { return data_ + sz_; }
+    const_iterator end() const noexcept { return data_ + sz_; }
+
+protected:
+    class row_t final {
+        T *base_;
+
+    public:
+        row_t(T *base) noexcept : base_(base) {}
+
+        const T *base() const { return base_; }
+
+        T operator[](std::size_t off) const { return *(base_ + off); }
+
+        T &operator[](std::size_t off) { return *(base_ + off); }
+    };
+
+public:
+    row_t operator[](std::size_t off) const { return row_t{access(off), n_}; }
+};
+
+template <matrix_elem T> class const_matrix_t final : public matrix_t<T> {
+    using matrix_t<T>::data_;
+    using matrix_t<T>::sz_;
+    using matrix_t<T>::used_;
+    using matrix_t<T>::n_;
+    std::optional<T> det_;
+
+public:
+    typedef matrix_t<T>::iterator iterator;
+    typedef matrix_t<T>::const_iterator const_iterator;
+
+public:
+    explicit const_matrix_t(std::size_t n, const T &val = T(0))
+        : matrix_t<T>(n, val)
+    {}
+
+    const_matrix_t(const std::initializer_list<T> &inpt) : matrix_t<T>(inpt) {}
+
+    template <typename RandIt>
+    explicit const_matrix_t(RandIt start, RandIt fin) : matrix_t<T>(start, fin)
+    {}
+
+    const T &det() const
+    {
+        if (!det_.has_value())
+            throw MatrExcepts::no_det("The determinant isn't calculated.");
+        return det_.value();
+    }
+
+    matrix_t<T> &operator=(const std::initializer_list<T> &inpt) = delete;
+    matrix_t<T> &operator*() = delete;
+    void swap_rows() = delete;
+    void mul_row() = delete;
+    void add_row() = delete;
+    void sub_row() = delete;
+    void set_col() = delete;
+    iterator begin() = delete;
+    iterator end() = delete;
+
+private:
     void calculate_det_echelon()
     {
-        matrix_t<T> tmp{*this};
+        const_matrix_t<T> tmp{*this};
         T det_coeff = tmp.make_echelon_form();
         det_ = det_coeff * tmp.diag_multiplication();
     }
@@ -336,20 +377,4 @@ public:
         return det_.value();
     }
 };
-
-template <matrix_elem T>
-struct matrix_dumper {
-    void operator()(const matrix_t<T> &m) const
-    {
-        auto rank = m.rank(), i = 0;
-        std::cout << std::endl;
-        for (auto start = m.begin(), fin = m.end(); start != fin; ++start, ++i)
-        {
-            std::cout << *start << "\t";
-            if (i % rank == rank - 1) std::cout << std::endl;
-        }
-        std::cout << std::endl;
-    }
-};
-
 }
