@@ -318,7 +318,7 @@ public:
     row_t operator[](std::size_t off) const { return row_t{access(off), n_}; }
 };
 
-template <matrix_elem T> class const_matrix_t final : public matrix_t<T> {
+template <matrix_elem T> class const_matrix_t : public matrix_t<T> {
     using matrix_t<T>::data_;
     using matrix_t<T>::sz_;
     using matrix_t<T>::used_;
@@ -343,6 +343,8 @@ public:
     const_matrix_t(const matrix_t<T> &matr) : matrix_t<T>(matr) {}
 
     const_matrix_t(matrix_t<T> &&matr) noexcept : matrix_t<T>(matr) {}
+
+    virtual ~const_matrix_t() = default;
 
     const T &det() const
     {
