@@ -11,11 +11,13 @@ public:
 };
 
 class wrong_init_list : public matrix_error {
+public:
     wrong_init_list(const std::string &what_arg) : matrix_error(what_arg) {}
     wrong_init_list(const wrong_init_list&) = default;
 };
 
 class no_det : public matrix_error {
+public:
     no_det(const std::string &what_arg) : matrix_error(what_arg) {}
     no_det(const no_det&) = default;
 };

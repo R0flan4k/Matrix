@@ -259,6 +259,13 @@ private:
             *access(lhs, i) -= *access(rhs, i);
     }
 
+    template <typename RandomIt>
+    void set_col(std::size_t col_id, RandomIt start, RandomIt fin)
+    {
+        for (std::size_t i = 0; i < n_; ++i, ++start)
+            *access(i, col_id) = *start;
+    }
+
 public:
     row_t operator[](std::size_t off) const
     {
