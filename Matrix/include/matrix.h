@@ -340,6 +340,10 @@ public:
     explicit const_matrix_t(RandIt start, RandIt fin) : matrix_t<T>(start, fin)
     {}
 
+    const_matrix_t(const matrix_t<T> &matr) : matrix_t<T>(matr) {}
+
+    const_matrix_t(matrix_t<T> &&matr) noexcept : matrix_t<T>(matr) {}
+
     const T &det() const
     {
         if (!det_.has_value())
