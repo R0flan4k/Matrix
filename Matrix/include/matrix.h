@@ -209,31 +209,6 @@ public:
             data_[i] *= val;
     }
 
-    iterator       begin() noexcept {return data_;}
-    const_iterator begin() const noexcept {return data_;}
-    iterator       end()   noexcept {return data_ + sz_;}
-    const_iterator end()   const noexcept {return data_ + sz_;}
-
-protected:
-    class row_t final{
-        T* base_;
-    
-    public:
-        row_t(T* base) noexcept : base_(base) {}
-
-        const T* base() const {return base_;}
-
-        T operator[](std::size_t off) const
-        {
-            return *(base_ + off);
-        }
-
-        T& operator[](std::size_t off)
-        {
-            return *(base_ + off);
-        }
-    };
-
     void swap_rows(std::size_t lhs, std::size_t rhs) noexcept
     {
         if (lhs == rhs) return;
@@ -260,11 +235,30 @@ protected:
     }
 
     template <typename RandomIt>
-    void set_col(std::size_t col_id, RandomIt start, RandomIt fin)
+    void set_col(std::size_t col_id, RandomIt start, RandomIt fin) noexcept
     {
         for (std::size_t i = 0; i < n_; ++i, ++start)
             *access(i, col_id) = *start;
     }
+
+    iterator begin() noexcept { return data_; }
+    const_iterator begin() const noexcept { return data_; }
+    iterator end() noexcept { return data_ + sz_; }
+    const_iterator end() const noexcept { return data_ + sz_; }
+
+protected:
+    class row_t final {
+        T *base_;
+
+    public:
+        row_t(T *base) noexcept : base_(base) {}
+
+        const T *base() const { return base_; }
+
+        T operator[](std::size_t off) const { return *(base_ + off); }
+
+        T &operator[](std::size_t off) { return *(base_ + off); }
+    };
 
 public:
     row_t operator[](std::size_t off) const
