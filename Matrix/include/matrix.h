@@ -101,7 +101,7 @@ public:
     typedef T* iterator;
     typedef const T* const_iterator;
 
-private:
+protected:
     T* access(std::size_t row, std::size_t col) const
     {
         assert(row < n_ && col < n_);
