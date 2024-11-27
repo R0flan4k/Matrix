@@ -321,13 +321,19 @@ private:
         return res;
     }
 
-public:
-    const T& calculate_det()
+    void calculate_det_echelon()
     {
-        if (det_.has_value()) return det_.value();
         matrix_t<T> tmp{*this};
         T det_coeff = tmp.make_echelon_form();
         det_ = det_coeff * tmp.diag_multiplication();
+    }
+
+public:
+    const T &calculate_det()
+    {
+        if (det_.has_value())
+            return det_.value();
+        calculate_det_echelon();
         return det_.value();
     }
 };
