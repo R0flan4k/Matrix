@@ -22,14 +22,6 @@ concept matrix_elem = requires(T t) {
     requires std::is_nothrow_move_constructible_v<T>;
 };
 
-#if 0
-template <matrix_elem T>
-class diagonal_input : public std::vector<T> {
-public:
-    diagonal_input(std::initializer_list<T> &inpt) : std::vector<T>(inpt) {}
-};
-#endif
-
 template <matrix_elem T>
 class matrix_buff {
 protected:
@@ -96,7 +88,6 @@ protected:
     using matrix_buff<T>::sz_;
     using matrix_buff<T>::used_;
     size_t n_;
-    // std::optional<T> det_;
 
 public:
     typedef T* iterator;
@@ -109,37 +100,8 @@ protected:
         return data_ + n_ * row + col;
     }
 
-#ifndef NDEBUG
-public:
-    virtual void dump_internal() const
-    {
-        for (std::size_t i = 0; i < sz_; ++i)
-        {
-            std::cout << data_[i] << "\t";
-            if (i % n_ == n_ - 1) std::cout << std::endl;
-        }
-    }
-
-    void dump(const char* descr) const
-    {
-        std::cout << descr << std::endl;
-        dump_internal();
-    }
-
-    void dump(const std::string &descr) const
-    {
-        std::cout << descr << std::endl;
-        dump_internal();
-    }
-#endif // NDEBUG
-
 public:
     std::size_t rank() const {return n_;}
-    // const T& det() const
-    // {
-    //     if (!det_.has_value()) throw MatrExcepts::no_det("The determinant
-    //     isn't calculated."); return det_.value();
-    // }
 
     explicit matrix_t(std::size_t n, const T &val = T(0))
         : matrix_buff<T>(n * n), n_(n)
@@ -178,25 +140,6 @@ public:
     }
 
     virtual ~matrix_t() = default;
-
-#if 0
-    explicit matrix_t(const diagonal_input<T> &inpt) : matrix_buff<T>(inpt.size()), n_(inpt.size())
-    {
-        if (n_ == 0) return;
-
-        auto inpt_back = std::prev(inpt.cend());
-        std::size_t diag_n = 0;
-        for (auto start = inpt.cbegin(); start != inpt_back; ++start, ++diag_n)
-        {
-            this->construct(access(diag_n, diag_n), *start);
-            for (std::size_t i = 0; i < n_; ++i)
-                this->construct(access(diag_n, i + 1), T(0));
-        }
-        this->construct(access(n_ - 1, n_ - 1), *inpt_back);
-
-        assert(used_ == sz_);
-    }
-#endif
 
     matrix_t& operator=(const std::initializer_list<T> &inpt)
     {
