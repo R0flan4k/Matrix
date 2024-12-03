@@ -2,15 +2,16 @@
 
 #include "matrix_exceptions.h"
 
-#include <iostream>
-#include <cassert>
-#include <utility>
 #include <algorithm>
-#include <optional>
+#include <cassert>
 #include <cmath>
 #include <concepts>
-#include <type_traits>
+#include <iostream>
+#include <iterator>
+#include <optional>
 #include <string>
+#include <type_traits>
+#include <utility>
 
 namespace Matrices
 {
@@ -125,7 +126,7 @@ public:
         assert(used_ == sz_);
     }
 
-    template <typename RandIt>
+    template <std::random_access_iterator RandIt>
     explicit matrix_t(RandIt start, RandIt fin)
         : matrix_buff<T>(std::distance(start, fin)),
           n_(std::sqrt(std::distance(start, fin)))
@@ -181,7 +182,7 @@ public:
             *access(lhs, i) -= *access(rhs, i);
     }
 
-    template <typename RandomIt>
+    template <std::random_access_iterator RandomIt>
     void set_col(std::size_t col_id, RandomIt start, RandomIt fin) noexcept
     {
         for (std::size_t i = 0; i < n_; ++i, ++start)
@@ -279,7 +280,7 @@ public:
 
     const_matrix_t(const std::initializer_list<T> &inpt) : matrix_t<T>(inpt) {}
 
-    template <typename RandIt>
+    template <std::random_access_iterator RandIt>
     explicit const_matrix_t(RandIt start, RandIt fin) : matrix_t<T>(start, fin)
     {}
 
