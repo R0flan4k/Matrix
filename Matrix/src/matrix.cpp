@@ -16,11 +16,20 @@ int main()
     if (rank == 0)
         return 0;
 
-    std::vector<float> input(std::istream_iterator<float>(std::cin),
-                             std::istream_iterator<float>());
+    std::vector<double> input(std::istream_iterator<double>(std::cin),
+                              std::istream_iterator<double>());
     if (input.size() != rank * rank)
         throw std::runtime_error("Matrix data input size error.");
 
-    const_matrix_t<float> matr(input.cbegin(), input.cend());
-    std::cout << matr.calculate_det() << std::endl;
+    try
+    {
+        const_matrix_t<double> matr(input.cbegin(), input.cend());
+        std::cout << matr.calculate_det() << std::endl;
+    } catch (const MatrExcepts::matrix_error &me)
+    {
+        std::cerr << me.what() << '\n';
+        return 1;
+    }
+
+    return 0;
 }
