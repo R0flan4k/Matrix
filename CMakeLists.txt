@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11)
 project(Matrix)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         set(CMAKE_CXX_FLAGS_DEBUG "-fsanitize=address -fsanitize=undefined")
 endif()
 
@@ -26,7 +26,6 @@ add_custom_target(
         ALL
         COMMAND clang-format -style=file -i ${CLANG_FORMAT_SRCS}
 )
-
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
 
