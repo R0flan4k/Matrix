@@ -12,14 +12,20 @@ int main()
     size_t rank;
     std::cin >> rank;
     if (!std::cin.good())
-        throw std::runtime_error("Matrix rank input error.");
+    {
+        std::cerr << "Matrix rank input error.\n";
+        return 1;
+    }
     if (rank == 0)
         return 0;
 
     std::vector<double> input(std::istream_iterator<double>(std::cin),
                               std::istream_iterator<double>());
     if (input.size() != rank * rank)
-        throw std::runtime_error("Matrix data input size error.");
+    {
+        std::cerr << "Matrix data input size error.\n";
+        return 1;
+    }
 
     try
     {
