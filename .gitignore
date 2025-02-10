@@ -402,4 +402,3 @@ build/*
 CMakeUserPresets.json
 .venv/
 .venv/*
-e2e/*

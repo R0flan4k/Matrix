@@ -19,7 +19,7 @@ target_include_directories(Matrix.x PUBLIC "${CMAKE_SOURCE_DIR}/Matrix/include")
 set(CLANG_FORMAT_SRCS
         ${SRCS}
 	${CMAKE_SOURCE_DIR}/Matrix/include/*.h
-        ${CMAKE_SOURCE_DIR}/tests/*.cpp
+        ${CMAKE_SOURCE_DIR}/unit_tests/*.cpp
 )
 add_custom_target(
         clangformat
@@ -27,5 +27,6 @@ add_custom_target(
         COMMAND clang-format -style=file -i ${CLANG_FORMAT_SRCS}
 )
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
+add_subdirectory(${CMAKE_SOURCE_DIR}/unit_tests)
+add_subdirectory(${CMAKE_SOURCE_DIR}/e2e)
 
