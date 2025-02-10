@@ -59,7 +59,7 @@ protected:
                            : static_cast<T *>(::operator new(sizeof(T) * sz_)))
     {}
 
-    explicit matrix_buff(const matrix_buff &m) : matrix_buff(m.sz_)
+    matrix_buff(const matrix_buff &m) : matrix_buff(m.sz_)
     {
         assert(m.used_ == m.sz_);
         for (std::size_t i = 0; i < sz_; ++i)
@@ -147,13 +147,12 @@ public:
         assert(used_ == sz_);
     }
 
-    template <std::random_access_iterator RandIt>
-    explicit matrix_t(RandIt start, RandIt fin)
+    template <std::forward_iterator RandIt>
+    matrix_t(RandIt start, RandIt fin)
         : matrix_buff<T>(std::distance(start, fin)),
           n_(std::sqrt(std::distance(start, fin)))
     {
-        for (std::size_t i = 0, dist = std::distance(start, fin); i < dist;
-             ++i, ++start)
+        for (std::size_t i = 0; start != fin; ++i, ++start)
         {
             this->construct(data_ + i, *start);
             ++used_;
@@ -211,7 +210,7 @@ public:
             *access(lhs, i) -= *access(rhs, i) * val;
     }
 
-    template <std::random_access_iterator RandomIt>
+    template <std::forward_iterator RandomIt>
     void set_col(std::size_t col_id, RandomIt start, RandomIt fin) noexcept
     {
         for (std::size_t i = 0; i < n_; ++i, ++start)
@@ -319,8 +318,8 @@ public:
 
     const_matrix_t(const std::initializer_list<T> &inpt) : matrix_t<T>(inpt) {}
 
-    template <std::random_access_iterator RandIt>
-    explicit const_matrix_t(RandIt start, RandIt fin) : matrix_t<T>(start, fin)
+    template <std::forward_iterator RandIt>
+    const_matrix_t(RandIt start, RandIt fin) : matrix_t<T>(start, fin)
     {}
 
     const_matrix_t(const matrix_t<T> &matr) : matrix_t<T>(matr) {}

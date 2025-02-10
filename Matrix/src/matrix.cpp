@@ -9,9 +9,9 @@ using Matrices::const_matrix_t;
 
 int main()
 {
-    size_t rank;
+    int rank;
     std::cin >> rank;
-    if (!std::cin.good())
+    if (!std::cin.good() || rank < 0)
     {
         std::cerr << "Matrix rank input error.\n";
         return 1;
