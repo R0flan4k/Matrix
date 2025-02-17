@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <vector>
 
-using Matrices::const_matrix_t;
+using Matrices::matrix_t;
 
 int main()
 {
@@ -29,7 +29,7 @@ int main()
 
     try
     {
-        const_matrix_t<double> matr(input.cbegin(), input.cend());
+        const matrix_t<double> matr(input.cbegin(), input.cend());
         std::cout << matr.calculate_det() << std::endl;
     } catch (const MatrExcepts::matrix_error &me)
     {

@@ -298,71 +298,23 @@ protected:
 
 public:
     row_t operator[](std::size_t off) const { return row_t{access(off, 0)}; }
-};
-
-template <matrix_elem T> class const_matrix_t : public matrix_t<T> {
-    using matrix_t<T>::data_;
-    using matrix_t<T>::sz_;
-    using matrix_t<T>::used_;
-    using matrix_t<T>::n_;
-    std::optional<T> det_;
-
-public:
-    typedef matrix_t<T>::iterator iterator;
-    typedef matrix_t<T>::const_iterator const_iterator;
-
-public:
-    explicit const_matrix_t(std::size_t n, const T &val = T(0))
-        : matrix_t<T>(n, val)
-    {}
-
-    const_matrix_t(const std::initializer_list<T> &inpt) : matrix_t<T>(inpt) {}
-
-    template <std::forward_iterator RandIt>
-    const_matrix_t(RandIt start, RandIt fin) : matrix_t<T>(start, fin)
-    {}
-
-    const_matrix_t(const matrix_t<T> &matr) : matrix_t<T>(matr) {}
-
-    const_matrix_t(matrix_t<T> &&matr) noexcept : matrix_t<T>(matr) {}
-
-    virtual ~const_matrix_t() = default;
-
-    const T &det() const
-    {
-        if (!det_.has_value())
-            throw MatrExcepts::no_det("The determinant isn't calculated.");
-        return det_.value();
-    }
-
-    matrix_t<T> &operator=(const std::initializer_list<T> &inpt) = delete;
-    matrix_t<T> &operator*() = delete;
-    void swap_rows() = delete;
-    void mul_row() = delete;
-    void add_row() = delete;
-    void sub_row() = delete;
-    void set_col() = delete;
-    iterator begin() = delete;
-    iterator end() = delete;
 
 private:
-    void calculate_det_echelon()
+    T calculate_det_echelon() const
     {
-        const_matrix_t<T> tmp{*this};
+        matrix_t<T> tmp{*this};
         int det_coeff = tmp.make_echelon_form();
-        det_ = det_coeff * tmp.diag_multiplication();
+        return det_coeff * tmp.diag_multiplication();
     }
 
 public:
-    const T &calculate_det()
+    T calculate_det() const
     {
-        if (det_.has_value())
-            return det_.value();
         if (n_ == 0)
             throw MatrExcepts::no_det(
                 "Can't calculate empty matrix determinant.");
-        calculate_det_echelon();
-        return det_.value();
+        return calculate_det_echelon();
     }
 };
+
 } // namespace Matrices

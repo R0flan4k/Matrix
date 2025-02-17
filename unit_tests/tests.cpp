@@ -11,11 +11,11 @@
 #include <string>
 #include <vector>
 
-using Matrices::const_matrix_t;
+using Matrices::matrix_t;
 
 TEST(Matrices, Determinant)
 {
-    const_matrix_t<float> m1{2}, m2{0}, m3{2, 13, -6, 4}, m4{0, 13, -6, 4},
+    const matrix_t<float> m1{2}, m2{0}, m3{2, 13, -6, 4}, m4{0, 13, -6, 4},
         m5{2, 0, -6, 4}, m6{2, 13, 0, 4}, m7{2, 13, -6, 0}, m8{0, 0, -6, 4},
         m9{0, 13, 0, 4}, m10{0, 13, -6, 0}, m11{2, 0, 0, 4}, m12{2, 0, -6, 0},
         m13{2, 13, 0, 0}, m14{0, 0, 0, 4}, m15{0, 0, -6, 0}, m16{0, 13, 0, 0},
@@ -400,7 +400,7 @@ TEST(Matrices, Determinant1)
         stream >> num;
         inpt.push_back(num);
     }
-    const_matrix_t<double> matr(inpt.begin(), inpt.end());
+    const matrix_t<double> matr(inpt.begin(), inpt.end());
 
     EXPECT_TRUE(DblCmp::are_eq(matr.calculate_det(), static_cast<double>(42),
                                DblCmp::tolerance<float>));
