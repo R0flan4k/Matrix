@@ -42,6 +42,8 @@ template <typename T> concept matrix_elem = requires(T t)
     requires std::is_nothrow_move_constructible_v<T>;
 };
 
+template <class U, class T> concept t_like = std::is_convertible<U, T>::value;
+
 template <matrix_elem T> class matrix_buff {
 protected:
     std::size_t sz_;
@@ -49,8 +51,10 @@ protected:
     T *data_;
 
 protected:
-    static void construct(T *p, const T &val) { new (p) T(val); }
-    static void construct(T *p, T &&val) { new (p) T(std::move(val)); }
+    template <t_like<T> U> static void construct(U *p, U val)
+    {
+        new (p) T(std::forward<T>(val));
+    }
     static void destroy(T *p) { p->~T(); }
 
     explicit matrix_buff(std::size_t sz)
