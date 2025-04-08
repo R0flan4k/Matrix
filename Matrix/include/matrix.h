@@ -20,19 +20,30 @@ using DblCmp::is_zero;
 
 namespace Matrices {
 
-struct matrix_dumper {
-    template <typename MatrT>
-    static void dump(const MatrT &m, const std::string &descr = "")
+namespace internal {
+
+template <typename T> concept matrix_like = requires(T t)
+{
     {
-        std::cout << "\t" << descr << std::endl;
-        auto it = m.begin();
-        for (std::size_t i = 0; i < m.rank(); ++i)
-        {
-            for (std::size_t j = 0; j < m.rank(); ++j, ++it)
-                std::cout << *it << "\t";
-            std::cout << std::endl;
-        }
+        t.begin()
     }
+    ->std::convertible_to<typename T::const_iterator>;
+    {
+        t.begin()
+    }
+    ->std::convertible_to<typename T::iterator>;
+    {
+        t.end()
+    }
+    ->std::convertible_to<typename T::const_iterator>;
+    {
+        t.end()
+    }
+    ->std::convertible_to<typename T::iterator>;
+    {
+        t.rank()
+    }
+    ->std::same_as<std::size_t>;
 };
 
 template <typename T> concept matrix_elem = requires(T t)
@@ -44,16 +55,20 @@ template <typename T> concept matrix_elem = requires(T t)
 
 template <class U, class T> concept t_like = std::is_convertible<U, T>::value;
 
-template <matrix_elem T> class matrix_buff {
+template <internal::matrix_elem T> class matrix_buff {
 protected:
     std::size_t sz_;
     std::size_t used_;
     T *data_;
 
 protected:
-    template <t_like<T> U> static void construct(U *p, U val)
+    template <internal::t_like<T> U> static void construct(U *p, U &&val)
     {
-        new (p) T(std::forward<T>(val));
+        new (p) T(std::move(val));
+    }
+    template <internal::t_like<T> U> static void construct(U *p, const U &val)
+    {
+        new (p) T(val);
     }
     static void destroy(T *p) { p->~T(); }
 
@@ -106,11 +121,34 @@ protected:
     }
 };
 
-template <matrix_elem T> class matrix_t : private matrix_buff<T> {
+} // namespace internal
+
+class matrix_dumper final {
+    std::ostream *debug_stream_;
+
+public:
+    matrix_dumper(std::ostream *ds) : debug_stream_(ds) {}
+
+    template <internal::matrix_like MatrT>
+    void dump(const MatrT &m, std::string_view descr = "") const
+    {
+        *debug_stream_ << "\t" << descr << std::endl;
+        auto it = m.begin();
+        for (std::size_t i = 0; i < m.rank(); ++i)
+        {
+            for (std::size_t j = 0; j < m.rank(); ++j, ++it)
+                *debug_stream_ << *it << "\t";
+            *debug_stream_ << std::endl;
+        }
+    }
+};
+
+template <internal::matrix_elem T>
+class matrix_t : private internal::matrix_buff<T> {
 protected:
-    using matrix_buff<T>::data_;
-    using matrix_buff<T>::sz_;
-    using matrix_buff<T>::used_;
+    using internal::matrix_buff<T>::data_;
+    using internal::matrix_buff<T>::sz_;
+    using internal::matrix_buff<T>::used_;
     size_t n_;
 
 public:
@@ -128,7 +166,7 @@ public:
     std::size_t rank() const { return n_; }
 
     explicit matrix_t(std::size_t n, const T &val = T(0))
-        : matrix_buff<T>(n * n), n_(n)
+        : internal::matrix_buff<T>(n * n), n_(n)
     {
         for (std::size_t i = 0; i < sz_; ++i)
         {
@@ -139,7 +177,7 @@ public:
     }
 
     matrix_t(const std::initializer_list<T> &inpt)
-        : matrix_buff<T>(inpt.size()), n_(std::sqrt(inpt.size()))
+        : internal::matrix_buff<T>(inpt.size()), n_(std::sqrt(inpt.size()))
     {
         std::size_t i = 0;
         for (auto start = inpt.begin(), fin = inpt.end(); start != fin;
@@ -153,7 +191,7 @@ public:
 
     template <std::forward_iterator RandIt>
     matrix_t(RandIt start, RandIt fin)
-        : matrix_buff<T>(std::distance(start, fin)),
+        : internal::matrix_buff<T>(std::distance(start, fin)),
           n_(std::sqrt(std::distance(start, fin)))
     {
         for (std::size_t i = 0; start != fin; ++i, ++start)
