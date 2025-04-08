@@ -55,6 +55,8 @@ template <typename T> concept matrix_elem = requires(T t)
 
 template <class U, class T> concept t_like = std::is_convertible<U, T>::value;
 
+template <typename T> concept pointer = std::is_pointer_v<T>;
+
 template <internal::matrix_elem T> class matrix_buff {
 protected:
     std::size_t sz_;
@@ -62,15 +64,22 @@ protected:
     T *data_;
 
 protected:
-    template <internal::t_like<T> U> static void construct(U *p, U &&val)
+    template <internal::t_like<T> U, typename K>
+    static void construct(K *p, U &&val)
     {
-        new (p) T(std::move(val));
+        new (p) T(std::forward<U>(val));
     }
-    template <internal::t_like<T> U> static void construct(U *p, const U &val)
-    {
-        new (p) T(val);
-    }
+
     static void destroy(T *p) { p->~T(); }
+
+    void
+    swap(matrix_buff &m) noexcept(std::is_nothrow_move_constructible_v<T>
+                                      &&std::is_nothrow_move_assignable_v<T>)
+    {
+        std::swap(data_, m.data_);
+        std::swap(sz_, m.sz_);
+        std::swap(used_, m.used_);
+    }
 
     explicit matrix_buff(std::size_t sz)
         : sz_(sz), used_(0),
@@ -97,9 +106,7 @@ protected:
         if (&m == this)
             return *this;
         matrix_buff<T> tmp(m);
-        std::swap(data_, tmp.data_);
-        std::swap(sz_, tmp.sz_);
-        std::swap(used_, tmp.used_);
+        swap(m);
         return *this;
     }
 
@@ -107,9 +114,7 @@ protected:
     {
         if (&m == this)
             return *this;
-        std::swap(data_, m.data_);
-        std::swap(sz_, m.sz_);
-        std::swap(used_, m.used_);
+        swap(m);
         return *this;
     }
 
@@ -119,6 +124,34 @@ protected:
             destroy(data_ + i);
         ::operator delete(data_, sizeof(T) * sz_);
     }
+};
+
+template <pointer P, typename MatrT> class matrix_iterator final {
+    P ptr_;
+
+public:
+    using iterator_category = std::random_access_iterator_tag;
+    using difference_type = std::size_t;
+    using value_type = decltype(*std::declval<P>());
+    using reference = std::add_lvalue_reference_t<value_type>;
+    using pointer = P;
+
+    matrix_iterator(P ptr) : ptr_(ptr) {}
+
+    matrix_iterator operator++() const { return matrix_iterator{ptr_++}; }
+    matrix_iterator &operator++()
+    {
+        ++ptr_;
+        return *this;
+    }
+    matrix_iterator operator--() const { return matrix_iterator{ptr_--}; }
+    matrix_iterator &operator--()
+    {
+        --ptr_;
+        return *this;
+    }
+    reference operator*() { return *ptr_; }
+    value_type operator*() const { return *ptr_; }
 };
 
 } // namespace internal
@@ -152,8 +185,8 @@ protected:
     size_t n_;
 
 public:
-    typedef T *iterator;
-    typedef const T *const_iterator;
+    typedef internal::matrix_iterator<T *, matrix_t<T>> iterator;
+    typedef internal::matrix_iterator<const T *, matrix_t<T>> const_iterator;
 
 protected:
     T *access(std::size_t row, std::size_t col) const
@@ -319,10 +352,10 @@ public:
         return res;
     }
 
-    iterator begin() noexcept { return data_; }
-    const_iterator begin() const noexcept { return data_; }
-    iterator end() noexcept { return data_ + sz_; }
-    const_iterator end() const noexcept { return data_ + sz_; }
+    iterator begin() noexcept { return iterator{data_}; }
+    const_iterator begin() const noexcept { return const_iterator{data_}; }
+    iterator end() noexcept { return iterator{data_ + sz_}; }
+    const_iterator end() const noexcept { return const_iterator{data_ + sz_}; }
 
 protected:
     class row_t final {
@@ -353,8 +386,7 @@ public:
     T calculate_det() const
     {
         if (n_ == 0)
-            throw MatrExcepts::no_det(
-                "Can't calculate empty matrix determinant.");
+            return T(1);
         return calculate_det_echelon();
     }
 };
