@@ -414,4 +414,14 @@ TEST(Matrices, Iterators)
     {
         *start += 1;
     }
+
+    EXPECT_TRUE(DblCmp::are_eq(m[0][0], 3.f));
+    EXPECT_TRUE(DblCmp::are_eq(m[0][1], 4.f));
+    EXPECT_TRUE(DblCmp::are_eq(m[0][2], 6.f));
+    EXPECT_TRUE(DblCmp::are_eq(m[1][0], 2.f));
+    EXPECT_TRUE(DblCmp::are_eq(m[1][1], 3.f));
+    EXPECT_TRUE(DblCmp::are_eq(m[1][2], 4.f));
+    EXPECT_TRUE(DblCmp::are_eq(m[2][0], 9.f));
+    EXPECT_TRUE(DblCmp::are_eq(m[2][1], 9.f));
+    EXPECT_TRUE(DblCmp::are_eq(m[2][2], 9.f));
 }
