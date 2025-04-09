@@ -405,3 +405,13 @@ TEST(Matrices, Determinant1)
     EXPECT_TRUE(DblCmp::are_eq(matr.calculate_det(), static_cast<double>(42),
                                DblCmp::tolerance<float>));
 }
+
+TEST(Matrices, Iterators)
+{
+    matrix_t<float> m{2, 3, 5, 1, 2, 3, 8, 8, 8};
+    for (matrix_t<float>::iterator start = m.begin(), fin = m.end();
+         start != fin; ++start)
+    {
+        *start += 1;
+    }
+}

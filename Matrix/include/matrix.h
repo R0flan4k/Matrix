@@ -126,7 +126,7 @@ protected:
     }
 };
 
-template <pointer P> class random_iterator final {
+template <pointer P> class biderectional_iterator final {
     P ptr_;
 
 public:
@@ -136,22 +136,41 @@ public:
     using reference = std::add_lvalue_reference_t<value_type>;
     using pointer = P;
 
-    random_iterator(P ptr) : ptr_(ptr) {}
+    biderectional_iterator(P ptr) : ptr_(ptr) {}
 
-    random_iterator operator++() const { return random_iterator{ptr_++}; }
-    random_iterator &operator++()
+    biderectional_iterator operator++() const
+    {
+        return biderectional_iterator{ptr_++};
+    }
+    biderectional_iterator &operator++()
     {
         ++ptr_;
         return *this;
     }
-    random_iterator operator--() const { return random_iterator{ptr_--}; }
-    random_iterator &operator--()
+    biderectional_iterator operator--() const
+    {
+        return biderectional_iterator{ptr_--};
+    }
+    biderectional_iterator &operator--()
     {
         --ptr_;
         return *this;
     }
     reference operator*() { return *ptr_; }
     value_type operator*() const { return *ptr_; }
+    pointer operator->() const { return ptr_; }
+
+    friend bool operator==(const biderectional_iterator<P> &it1,
+                           const biderectional_iterator<P> &it2)
+    {
+        return it1.ptr_ == it2.ptr_;
+    };
+
+    friend bool operator!=(const biderectional_iterator<P> &it1,
+                           const biderectional_iterator<P> &it2)
+    {
+        return it1.ptr_ != it2.ptr_;
+    };
 };
 
 } // namespace internal
@@ -185,8 +204,8 @@ protected:
     size_t n_;
 
 public:
-    typedef internal::random_iterator<T *> iterator;
-    typedef internal::random_iterator<const T *> const_iterator;
+    typedef internal::biderectional_iterator<T *> iterator;
+    typedef internal::biderectional_iterator<const T *> const_iterator;
 
 protected:
     T *access(std::size_t row, std::size_t col) const
