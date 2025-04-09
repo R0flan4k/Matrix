@@ -126,7 +126,7 @@ protected:
     }
 };
 
-template <pointer P, typename MatrT> class matrix_iterator final {
+template <pointer P> class random_iterator final {
     P ptr_;
 
 public:
@@ -136,16 +136,16 @@ public:
     using reference = std::add_lvalue_reference_t<value_type>;
     using pointer = P;
 
-    matrix_iterator(P ptr) : ptr_(ptr) {}
+    random_iterator(P ptr) : ptr_(ptr) {}
 
-    matrix_iterator operator++() const { return matrix_iterator{ptr_++}; }
-    matrix_iterator &operator++()
+    random_iterator operator++() const { return random_iterator{ptr_++}; }
+    random_iterator &operator++()
     {
         ++ptr_;
         return *this;
     }
-    matrix_iterator operator--() const { return matrix_iterator{ptr_--}; }
-    matrix_iterator &operator--()
+    random_iterator operator--() const { return random_iterator{ptr_--}; }
+    random_iterator &operator--()
     {
         --ptr_;
         return *this;
@@ -185,8 +185,8 @@ protected:
     size_t n_;
 
 public:
-    typedef internal::matrix_iterator<T *, matrix_t<T>> iterator;
-    typedef internal::matrix_iterator<const T *, matrix_t<T>> const_iterator;
+    typedef internal::random_iterator<T *> iterator;
+    typedef internal::random_iterator<const T *> const_iterator;
 
 protected:
     T *access(std::size_t row, std::size_t col) const
