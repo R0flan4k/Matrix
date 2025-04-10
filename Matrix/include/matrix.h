@@ -225,19 +225,19 @@ bool operator<=(const random_access_iterator<P> &it1,
 template <pointer P>
 random_access_iterator<P> operator+(random_access_iterator<P> it, std::size_t n)
 {
-    return random_access_iterator<P>{it += n};
+    return it += n;
 }
 
 template <pointer P>
 random_access_iterator<P> operator+(std::size_t n, random_access_iterator<P> it)
 {
-    return random_access_iterator<P>{it += n};
+    return it += n;
 }
 
 template <pointer P>
 random_access_iterator<P> operator-(random_access_iterator<P> it, std::size_t n)
 {
-    return random_access_iterator<P>{it -= n};
+    return it -= n;
 }
 
 } // namespace internal
