@@ -130,7 +130,7 @@ template <pointer P> class biderectional_iterator final {
     P ptr_;
 
 public:
-    using iterator_category = std::random_access_iterator_tag;
+    using iterator_category = std::biderectional_access_iterator_tag;
     using difference_type = std::size_t;
     using value_type = decltype(*std::declval<P>());
     using reference = std::add_lvalue_reference_t<value_type>;
