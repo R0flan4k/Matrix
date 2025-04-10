@@ -126,32 +126,33 @@ protected:
     }
 };
 
-template <pointer P> class biderectional_iterator final {
+template <pointer P> class random_access_iterator final {
     P ptr_;
 
 public:
-    using iterator_category = std::biderectional_access_iterator_tag;
+    using iterator_category = std::random_access_iterator_tag;
     using difference_type = std::size_t;
     using value_type = decltype(*std::declval<P>());
     using reference = std::add_lvalue_reference_t<value_type>;
     using pointer = P;
+    using size_type = std::size_t;
 
-    biderectional_iterator(P ptr) : ptr_(ptr) {}
+    random_access_iterator(P ptr) : ptr_(ptr) {}
 
-    biderectional_iterator operator++() const
+    random_access_iterator<P> operator++(int)
     {
-        return biderectional_iterator{ptr_++};
+        return random_access_iterator<P>{ptr_++};
     }
-    biderectional_iterator &operator++()
+    random_access_iterator<P> &operator++()
     {
         ++ptr_;
         return *this;
     }
-    biderectional_iterator operator--() const
+    random_access_iterator<P> operator--(int)
     {
-        return biderectional_iterator{ptr_--};
+        return random_access_iterator<P>{ptr_--};
     }
-    biderectional_iterator &operator--()
+    random_access_iterator<P> &operator--()
     {
         --ptr_;
         return *this;
@@ -160,18 +161,84 @@ public:
     value_type operator*() const { return *ptr_; }
     pointer operator->() const { return ptr_; }
 
-    friend bool operator==(const biderectional_iterator<P> &it1,
-                           const biderectional_iterator<P> &it2)
+    random_access_iterator<P> &operator+=(size_type n)
+    {
+        ptr_ += n;
+        return *this;
+    }
+    random_access_iterator<P> &operator-=(size_type n)
+    {
+        ptr_ -= n;
+        return *this;
+    }
+
+    friend difference_type operator-(const random_access_iterator<P> &it1,
+                                     const random_access_iterator<P> &it2)
+    {
+        return it1.ptr_ - it2.ptr_;
+    }
+
+    friend bool operator==(const random_access_iterator<P> &it1,
+                           const random_access_iterator<P> &it2)
     {
         return it1.ptr_ == it2.ptr_;
-    };
+    }
 
-    friend bool operator!=(const biderectional_iterator<P> &it1,
-                           const biderectional_iterator<P> &it2)
-    {
-        return it1.ptr_ != it2.ptr_;
-    };
+    reference operator[](size_type n) const { return ptr_[n]; }
 };
+
+template <pointer P>
+bool operator!=(const random_access_iterator<P> &it1,
+                const random_access_iterator<P> &it2)
+{
+    return !(it1 == it2);
+}
+
+template <pointer P>
+bool operator>(const random_access_iterator<P> &it1,
+               const random_access_iterator<P> &it2)
+{
+    return it1 - it2 > 0;
+}
+
+template <pointer P>
+bool operator<(const random_access_iterator<P> &it1,
+               const random_access_iterator<P> &it2)
+{
+    return it1 - it2 < 0;
+}
+
+template <pointer P>
+bool operator>=(const random_access_iterator<P> &it1,
+                const random_access_iterator<P> &it2)
+{
+    return it1 - it2 >= 0;
+}
+
+template <pointer P>
+bool operator<=(const random_access_iterator<P> &it1,
+                const random_access_iterator<P> &it2)
+{
+    return it1 - it2 <= 0;
+}
+
+template <pointer P>
+random_access_iterator<P> operator+(random_access_iterator<P> it, std::size_t n)
+{
+    return random_access_iterator<P>{it += n};
+}
+
+template <pointer P>
+random_access_iterator<P> operator+(std::size_t n, random_access_iterator<P> it)
+{
+    return random_access_iterator<P>{it += n};
+}
+
+template <pointer P>
+random_access_iterator<P> operator-(random_access_iterator<P> it, std::size_t n)
+{
+    return random_access_iterator<P>{it -= n};
+}
 
 } // namespace internal
 
@@ -204,8 +271,8 @@ protected:
     size_t n_;
 
 public:
-    typedef internal::biderectional_iterator<T *> iterator;
-    typedef internal::biderectional_iterator<const T *> const_iterator;
+    typedef internal::random_access_iterator<T *> iterator;
+    typedef internal::random_access_iterator<const T *> const_iterator;
 
 protected:
     T *access(std::size_t row, std::size_t col) const

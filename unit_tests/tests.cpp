@@ -412,7 +412,13 @@ TEST(Matrices, Iterators)
     for (matrix_t<float>::iterator start = m.begin(), fin = m.end();
          start != fin; ++start)
     {
-        *start += 1;
+        *start += 0.5;
+    }
+
+    for (matrix_t<float>::iterator start = m.begin(), fin = m.end();
+         start != fin; start++)
+    {
+        *start += 0.5;
     }
 
     EXPECT_TRUE(DblCmp::are_eq(m[0][0], 3.f));
@@ -424,4 +430,9 @@ TEST(Matrices, Iterators)
     EXPECT_TRUE(DblCmp::are_eq(m[2][0], 9.f));
     EXPECT_TRUE(DblCmp::are_eq(m[2][1], 9.f));
     EXPECT_TRUE(DblCmp::are_eq(m[2][2], 9.f));
+
+    auto it1 = m.begin();
+    auto it2 = it1 + 5;
+    EXPECT_EQ(it2 - it1, 5ul);
+    EXPECT_TRUE(it2 > it1);
 }
