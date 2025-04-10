@@ -421,15 +421,16 @@ TEST(Matrices, Iterators)
         *start += 0.5;
     }
 
-    EXPECT_TRUE(DblCmp::are_eq(m[0][0], 3.f));
-    EXPECT_TRUE(DblCmp::are_eq(m[0][1], 4.f));
-    EXPECT_TRUE(DblCmp::are_eq(m[0][2], 6.f));
-    EXPECT_TRUE(DblCmp::are_eq(m[1][0], 2.f));
-    EXPECT_TRUE(DblCmp::are_eq(m[1][1], 3.f));
-    EXPECT_TRUE(DblCmp::are_eq(m[1][2], 4.f));
-    EXPECT_TRUE(DblCmp::are_eq(m[2][0], 9.f));
-    EXPECT_TRUE(DblCmp::are_eq(m[2][1], 9.f));
-    EXPECT_TRUE(DblCmp::are_eq(m[2][2], 9.f));
+    auto start = m.begin();
+    EXPECT_TRUE(DblCmp::are_eq(start[0], 3.f));
+    EXPECT_TRUE(DblCmp::are_eq(start[1], 4.f));
+    EXPECT_TRUE(DblCmp::are_eq(start[2], 6.f));
+    EXPECT_TRUE(DblCmp::are_eq(start[3], 2.f));
+    EXPECT_TRUE(DblCmp::are_eq(start[4], 3.f));
+    EXPECT_TRUE(DblCmp::are_eq(start[5], 4.f));
+    EXPECT_TRUE(DblCmp::are_eq(start[6], 9.f));
+    EXPECT_TRUE(DblCmp::are_eq(start[7], 9.f));
+    EXPECT_TRUE(DblCmp::are_eq(start[8], 9.f));
 
     auto it1 = m.begin();
     auto it2 = it1 + 5;
