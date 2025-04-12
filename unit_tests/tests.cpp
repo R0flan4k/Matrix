@@ -1,6 +1,8 @@
 #define private public
+#define protected public
 #include "matrix.h"
 #undef private
+#undef protected
 
 #include "double_comparing.h"
 #include "gtest/gtest.h"
@@ -436,4 +438,39 @@ TEST(Matrices, Iterators)
     auto it2 = it1 + 5;
     EXPECT_EQ(it2 - it1, 5ul);
     EXPECT_TRUE(it2 > it1);
+
+    static_assert(
+        std::is_same_v<std::iterator_traits<decltype(start)>::iterator_category,
+                       std::random_access_iterator_tag>);
+    static_assert(
+        std::is_same_v<std::iterator_traits<decltype(it1)>::iterator_category,
+                       std::random_access_iterator_tag>);
+    static_assert(
+        std::is_same_v<std::iterator_traits<decltype(it2)>::iterator_category,
+                       std::random_access_iterator_tag>);
+    static_assert(std::random_access_iterator<decltype(m.begin())>);
+    static_assert(std::random_access_iterator<decltype(m.end())>);
+    static_assert(std::random_access_iterator<decltype(m.cbegin())>);
+    static_assert(std::random_access_iterator<decltype(m.cend())>);
+}
+
+TEST(Matrices, Operations)
+{
+    matrix_t<float> m{2, 3, 5, 1, 2, 3, 8, 8, 8};
+
+    m.mul_row(0, 2);
+    EXPECT_TRUE(
+        std::equal(m.begin(), m.end(),
+                   matrix_t<float>{4, 6, 10, 1, 2, 3, 8, 8, 8}.begin()));
+    m.div_row(2, 2);
+    EXPECT_TRUE(
+        std::equal(m.begin(), m.end(),
+                   matrix_t<float>{4, 6, 10, 1, 2, 3, 4, 4, 4}.begin()));
+    m.add_row(0, 1);
+    EXPECT_TRUE(
+        std::equal(m.begin(), m.end(),
+                   matrix_t<float>{5, 8, 13, 1, 2, 3, 4, 4, 4}.begin()));
+    m.add_row(0, 1, -2);
+    EXPECT_TRUE(std::equal(m.begin(), m.end(),
+                           matrix_t<float>{3, 4, 7, 1, 2, 3, 4, 4, 4}.begin()));
 }

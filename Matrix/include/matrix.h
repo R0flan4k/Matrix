@@ -9,6 +9,7 @@
 #include <concepts>
 #include <iostream>
 #include <iterator>
+#include <numeric>
 #include <optional>
 #include <string>
 #include <type_traits>
@@ -25,7 +26,7 @@ namespace internal {
 template <typename T> concept matrix_like = requires(T t)
 {
     {
-        t.begin()
+        t.cbegin()
     }
     ->std::convertible_to<typename T::const_iterator>;
     {
@@ -33,7 +34,7 @@ template <typename T> concept matrix_like = requires(T t)
     }
     ->std::convertible_to<typename T::iterator>;
     {
-        t.end()
+        t.cend()
     }
     ->std::convertible_to<typename T::const_iterator>;
     {
@@ -126,60 +127,63 @@ protected:
     }
 };
 
-template <pointer P> class random_access_iterator final {
-    P ptr_;
+template <typename T, typename Distance = int, typename Pointer = T *,
+          typename Reference = T &>
+class random_access_iterator final {
+    Pointer ptr_;
 
 public:
     using iterator_category = std::random_access_iterator_tag;
-    using difference_type = std::size_t;
-    using value_type = decltype(*std::declval<P>());
-    using reference = std::add_lvalue_reference_t<value_type>;
-    using pointer = P;
+    using difference_type = Distance;
+    using value_type = T;
+    using reference = Reference;
+    using pointer = Pointer;
     using size_type = std::size_t;
 
-    random_access_iterator(P ptr) : ptr_(ptr) {}
+    random_access_iterator() noexcept : ptr_(Pointer()) {}
+    random_access_iterator(const Pointer &ptr) noexcept : ptr_(ptr) {}
 
-    random_access_iterator<P> operator++(int)
-    {
-        return random_access_iterator<P>{ptr_++};
-    }
-    random_access_iterator<P> &operator++()
-    {
-        ++ptr_;
-        return *this;
-    }
-    random_access_iterator<P> operator--(int)
-    {
-        return random_access_iterator<P>{ptr_--};
-    }
-    random_access_iterator<P> &operator--()
-    {
-        --ptr_;
-        return *this;
-    }
-    reference operator*() { return *ptr_; }
-    value_type operator*() const { return *ptr_; }
-    pointer operator->() const { return ptr_; }
-
-    random_access_iterator<P> &operator+=(size_type n)
+    random_access_iterator<T, Distance, Pointer, Reference> &
+    operator+=(size_type n)
     {
         ptr_ += n;
         return *this;
     }
-    random_access_iterator<P> &operator-=(size_type n)
+    random_access_iterator<T, Distance, Pointer, Reference> &
+    operator-=(size_type n)
     {
         ptr_ -= n;
         return *this;
     }
+    random_access_iterator<T, Distance, Pointer, Reference> operator++(int)
+    {
+        return random_access_iterator<T, Distance, Pointer, Reference>{ptr_++};
+    }
+    random_access_iterator<T, Distance, Pointer, Reference> &operator++()
+    {
+        return *this += 1;
+    }
+    random_access_iterator<T, Distance, Pointer, Reference> operator--(int)
+    {
+        return random_access_iterator<T, Distance, Pointer, Reference>{ptr_--};
+    }
+    random_access_iterator<T, Distance, Pointer, Reference> &operator--()
+    {
+        return *this -= 1;
+    }
+    reference operator*() const { return *ptr_; }
+    pointer operator->() const { return ptr_; }
 
-    friend difference_type operator-(const random_access_iterator<P> &it1,
-                                     const random_access_iterator<P> &it2)
+    friend difference_type operator-(
+        const random_access_iterator<T, Distance, Pointer, Reference> &it1,
+        const random_access_iterator<T, Distance, Pointer, Reference> &it2)
     {
         return it1.ptr_ - it2.ptr_;
     }
 
-    friend bool operator==(const random_access_iterator<P> &it1,
-                           const random_access_iterator<P> &it2)
+    friend bool operator==(
+        const random_access_iterator<T, Distance, Pointer, Reference> &it1,
+        const random_access_iterator<T, Distance, Pointer, Reference> &it2)
     {
         return it1.ptr_ == it2.ptr_;
     }
@@ -187,55 +191,74 @@ public:
     reference operator[](size_type n) const { return ptr_[n]; }
 };
 
-template <pointer P>
-bool operator!=(const random_access_iterator<P> &it1,
-                const random_access_iterator<P> &it2)
+template <typename T, typename Distance = std::size_t, typename Pointer = T *,
+          typename Reference = T &>
+bool operator!=(
+    const random_access_iterator<T, Distance, Pointer, Reference> &it1,
+    const random_access_iterator<T, Distance, Pointer, Reference> &it2)
 {
     return !(it1 == it2);
 }
 
-template <pointer P>
-bool operator>(const random_access_iterator<P> &it1,
-               const random_access_iterator<P> &it2)
+template <typename T, typename Distance = std::size_t, typename Pointer = T *,
+          typename Reference = T &>
+bool operator>(
+    const random_access_iterator<T, Distance, Pointer, Reference> &it1,
+    const random_access_iterator<T, Distance, Pointer, Reference> &it2)
 {
     return it1 - it2 > 0;
 }
 
-template <pointer P>
-bool operator<(const random_access_iterator<P> &it1,
-               const random_access_iterator<P> &it2)
+template <typename T, typename Distance = std::size_t, typename Pointer = T *,
+          typename Reference = T &>
+bool operator<(
+    const random_access_iterator<T, Distance, Pointer, Reference> &it1,
+    const random_access_iterator<T, Distance, Pointer, Reference> &it2)
 {
     return it1 - it2 < 0;
 }
 
-template <pointer P>
-bool operator>=(const random_access_iterator<P> &it1,
-                const random_access_iterator<P> &it2)
+template <typename T, typename Distance = std::size_t, typename Pointer = T *,
+          typename Reference = T &>
+bool operator>=(
+    const random_access_iterator<T, Distance, Pointer, Reference> &it1,
+    const random_access_iterator<T, Distance, Pointer, Reference> &it2)
 {
     return it1 - it2 >= 0;
 }
 
-template <pointer P>
-bool operator<=(const random_access_iterator<P> &it1,
-                const random_access_iterator<P> &it2)
+template <typename T, typename Distance = std::size_t, typename Pointer = T *,
+          typename Reference = T &>
+bool operator<=(
+    const random_access_iterator<T, Distance, Pointer, Reference> &it1,
+    const random_access_iterator<T, Distance, Pointer, Reference> &it2)
 {
     return it1 - it2 <= 0;
 }
 
-template <pointer P>
-random_access_iterator<P> operator+(random_access_iterator<P> it, std::size_t n)
+template <typename T, typename Distance = std::size_t, typename Pointer = T *,
+          typename Reference = T &>
+random_access_iterator<T, Distance, Pointer, Reference>
+operator+(random_access_iterator<T, Distance, Pointer, Reference> it,
+          std::size_t n)
 {
     return it += n;
 }
 
-template <pointer P>
-random_access_iterator<P> operator+(std::size_t n, random_access_iterator<P> it)
+template <typename T, typename Distance = std::size_t, typename Pointer = T *,
+          typename Reference = T &>
+random_access_iterator<T, Distance, Pointer, Reference>
+operator+(std::size_t n,
+          random_access_iterator<T, Distance, Pointer, Reference> it)
 {
     return it += n;
 }
 
-template <pointer P>
-random_access_iterator<P> operator-(random_access_iterator<P> it, std::size_t n)
+template <typename T, typename Distance = std::size_t, typename Pointer = T *,
+          typename Reference = T &>
+random_access_iterator<T, Distance, Pointer, Reference>
+operator-(random_access_iterator<T, Distance, Pointer, Reference> it,
+          std::size_t n)
 {
     return it -= n;
 }
@@ -246,13 +269,13 @@ class matrix_dumper final {
     std::ostream *debug_stream_;
 
 public:
-    matrix_dumper(std::ostream *ds) : debug_stream_(ds) {}
+    matrix_dumper(std::ostream *ds = &std::cout) : debug_stream_(ds) {}
 
     template <internal::matrix_like MatrT>
     void dump(const MatrT &m, std::string_view descr = "") const
     {
         *debug_stream_ << "\t" << descr << std::endl;
-        auto it = m.begin();
+        auto it = m.cbegin();
         for (std::size_t i = 0; i < m.rank(); ++i)
         {
             for (std::size_t j = 0; j < m.rank(); ++j, ++it)
@@ -271,13 +294,13 @@ protected:
     size_t n_;
 
 public:
-    typedef internal::random_access_iterator<T *> iterator;
-    typedef internal::random_access_iterator<const T *> const_iterator;
+    typedef internal::random_access_iterator<T> iterator;
+    typedef internal::random_access_iterator<const T> const_iterator;
 
 protected:
     T *access(std::size_t row, std::size_t col) const
     {
-        assert(row < n_ && col < n_);
+        assert(row < n_ + 1 && col < n_ + 1);
         return data_ + n_ * row + col;
     }
 
@@ -321,21 +344,28 @@ public:
         assert(used_ == sz_);
     }
 
-    virtual ~matrix_t() = default;
-
     matrix_t &operator=(const std::initializer_list<T> &inpt)
     {
         if (inpt.size() != sz_)
             throw MatrExcepts::wrong_init_list(
                 "Wrong size of initializer list.");
-        std::move(inpt.cbegin(), inpt.cend(), data_) assert(used_ == sz_);
+        std::move(inpt.cbegin(), inpt.cend(), data_);
+        assert(used_ == sz_);
         return *this;
     }
 
+    iterator begin() noexcept { return iterator{data_}; }
+    const_iterator cbegin() const noexcept { return const_iterator{data_}; }
+    iterator end() noexcept { return iterator{data_ + sz_}; }
+    const_iterator cend() const noexcept { return const_iterator{data_ + sz_}; }
+
+    virtual ~matrix_t() = default;
+
+public:
     matrix_t &operator*(const T &val) noexcept
     {
-        for (std::size_t i = 0; i < sz_; ++i)
-            data_[i] *= val;
+        std::transform(this->begin(), this->end(), this->begin(),
+                       [&val](auto &el) { el *= val; });
         return *this;
     }
 
@@ -349,33 +379,34 @@ public:
 
     void mul_row(std::size_t row_id, const T &val) noexcept
     {
-        for (std::size_t i = 0; i < n_; ++i)
-            *access(row_id, i) *= val;
+        auto start = iterator{access(row_id, 0)},
+             fin = iterator{access(row_id + 1, 0)};
+        std::transform(start, fin, start,
+                       [&val](auto &el) { return el * val; });
     }
 
     void div_row(std::size_t row_id, const T &val) noexcept
     {
-        for (std::size_t i = 0; i < n_; ++i)
-            *access(row_id, i) /= val;
+        auto start = iterator{access(row_id, 0)},
+             fin = iterator{access(row_id + 1, 0)};
+        std::transform(start, fin, start,
+                       [&val](auto &el) { return el / val; });
     }
 
     void add_row(std::size_t lhs, std::size_t rhs, const T &val = T(1)) noexcept
     {
-        for (std::size_t i = 0; i < n_; ++i)
-            *access(lhs, i) += *access(rhs, i) * val;
+        auto start1 = iterator{access(lhs, 0)},
+             fin1 = iterator{access(lhs + 1, 0)},
+             start2 = iterator{access(rhs, 0)},
+             fin2 = iterator{access(rhs + 1, 0)};
+        std::ranges::transform(
+            start1, fin1, start2, fin2, start1,
+            [&val](auto &el1, auto &el2) { return el1 + el2 * val; });
     }
 
     void sub_row(std::size_t lhs, std::size_t rhs, const T &val = T(1)) noexcept
     {
-        for (std::size_t i = 0; i < n_; ++i)
-            *access(lhs, i) -= *access(rhs, i) * val;
-    }
-
-    template <std::forward_iterator RandomIt>
-    void set_col(std::size_t col_id, RandomIt start, RandomIt fin) noexcept
-    {
-        for (std::size_t i = 0; i < n_; ++i, ++start)
-            *access(i, col_id) = *start;
+        add_row(lhs, rhs, -val);
     }
 
 protected:
@@ -437,11 +468,6 @@ public:
             res *= *access(i, i);
         return res;
     }
-
-    iterator begin() noexcept { return iterator{data_}; }
-    const_iterator begin() const noexcept { return const_iterator{data_}; }
-    iterator end() noexcept { return iterator{data_ + sz_}; }
-    const_iterator end() const noexcept { return const_iterator{data_ + sz_}; }
 
 protected:
     class row_t final {
