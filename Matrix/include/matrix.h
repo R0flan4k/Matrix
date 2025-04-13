@@ -15,10 +15,6 @@
 #include <type_traits>
 #include <utility>
 
-using DblCmp::are_eq;
-using DblCmp::are_geq;
-using DblCmp::is_zero;
-
 namespace Matrices {
 
 namespace internal {
@@ -266,21 +262,21 @@ operator-(random_access_iterator<T, Distance, Pointer, Reference> it,
 } // namespace internal
 
 class matrix_dumper final {
-    std::ostream *debug_stream_;
+    std::ostream &debug_stream_;
 
 public:
-    matrix_dumper(std::ostream *ds = &std::cout) : debug_stream_(ds) {}
+    matrix_dumper(std::ostream &ds = std::cout) : debug_stream_(ds) {}
 
     template <internal::matrix_like MatrT>
     void dump(const MatrT &m, std::string_view descr = "") const
     {
-        *debug_stream_ << "\t" << descr << std::endl;
+        debug_stream_ << "\t" << descr << std::endl;
         auto it = m.cbegin();
         for (std::size_t i = 0; i < m.rank(); ++i)
         {
             for (std::size_t j = 0; j < m.rank(); ++j, ++it)
-                *debug_stream_ << *it << "\t";
-            *debug_stream_ << std::endl;
+                debug_stream_ << *it << "\t";
+            debug_stream_ << std::endl;
         }
     }
 };
@@ -362,10 +358,10 @@ public:
     virtual ~matrix_t() = default;
 
 public:
-    matrix_t &operator*(const T &val) noexcept
+    matrix_t &operator*=(const T &val) noexcept
     {
-        std::transform(this->begin(), this->end(), this->begin(),
-                       [&val](auto &el) { el *= val; });
+        std::transform(begin(), end(), begin(),
+                       [&val](auto &el) { return el * val; });
         return *this;
     }
 
@@ -412,11 +408,11 @@ public:
 protected:
     int make_non_zero_row(std::size_t row_id) noexcept
     {
-        if (!are_eq(*access(row_id, row_id), T(0)))
+        if (!DblCmp::are_eq(*access(row_id, row_id), T(0)))
             return 1;
         for (std::size_t i = row_id + 1; i < n_; ++i)
         {
-            if (!are_eq(*access(i, row_id), T(0)))
+            if (!DblCmp::are_eq(*access(i, row_id), T(0)))
             {
                 swap_rows(row_id, i);
                 return -1;
@@ -427,15 +423,15 @@ protected:
 
     int normalize_rows(std::size_t row_id) noexcept
     {
-        assert(!are_eq(*access(row_id, row_id), T(0)));
+        assert(!DblCmp::are_eq(*access(row_id, row_id), T(0)));
         int transform_coeff = 1;
         for (std::size_t i = row_id + 1; i < n_; ++i)
         {
-            if (are_eq(*access(i, row_id), T(0)))
+            if (DblCmp::are_eq(*access(i, row_id), T(0)))
                 continue;
 
-            if (are_geq(std::abs(*access(i, row_id)),
-                        std::abs(*access(row_id, row_id))))
+            if (DblCmp::are_geq(std::abs(*access(i, row_id)),
+                                std::abs(*access(row_id, row_id))))
             {
                 transform_coeff *= -1;
                 swap_rows(i, row_id);

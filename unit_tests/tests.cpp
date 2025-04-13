@@ -473,4 +473,16 @@ TEST(Matrices, Operations)
     m.add_row(0, 1, -2);
     EXPECT_TRUE(std::equal(m.begin(), m.end(),
                            matrix_t<float>{3, 4, 7, 1, 2, 3, 4, 4, 4}.begin()));
+    m.sub_row(1, 2);
+    EXPECT_TRUE(
+        std::equal(m.begin(), m.end(),
+                   matrix_t<float>{3, 4, 7, -3, -2, -1, 4, 4, 4}.begin()));
+    m.sub_row(0, 1, 5);
+    EXPECT_TRUE(
+        std::equal(m.begin(), m.end(),
+                   matrix_t<float>{18, 14, 12, -3, -2, -1, 4, 4, 4}.begin()));
+    m.swap_rows(0, 1);
+    EXPECT_TRUE(
+        std::equal(m.begin(), m.end(),
+                   matrix_t<float>{-3, -2, -1, 18, 14, 12, 4, 4, 4}.begin()));
 }
