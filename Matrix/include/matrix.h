@@ -123,14 +123,14 @@ protected:
     }
 };
 
-template <typename T, typename Distance = int, typename Pointer = T *,
+template <typename T, typename Difference = int, typename Pointer = T *,
           typename Reference = T &>
 class random_access_iterator final {
     Pointer ptr_;
 
 public:
     using iterator_category = std::random_access_iterator_tag;
-    using difference_type = Distance;
+    using difference_type = Difference;
     using value_type = T;
     using reference = Reference;
     using pointer = Pointer;
@@ -139,31 +139,33 @@ public:
     random_access_iterator() noexcept : ptr_(Pointer()) {}
     random_access_iterator(const Pointer &ptr) noexcept : ptr_(ptr) {}
 
-    random_access_iterator<T, Distance, Pointer, Reference> &
+    random_access_iterator<T, Difference, Pointer, Reference> &
     operator+=(size_type n)
     {
         ptr_ += n;
         return *this;
     }
-    random_access_iterator<T, Distance, Pointer, Reference> &
+    random_access_iterator<T, Difference, Pointer, Reference> &
     operator-=(size_type n)
     {
         ptr_ -= n;
         return *this;
     }
-    random_access_iterator<T, Distance, Pointer, Reference> operator++(int)
+    random_access_iterator<T, Difference, Pointer, Reference> operator++(int)
     {
-        return random_access_iterator<T, Distance, Pointer, Reference>{ptr_++};
+        return random_access_iterator<T, Difference, Pointer, Reference>{
+            ptr_++};
     }
-    random_access_iterator<T, Distance, Pointer, Reference> &operator++()
+    random_access_iterator<T, Difference, Pointer, Reference> &operator++()
     {
         return *this += 1;
     }
-    random_access_iterator<T, Distance, Pointer, Reference> operator--(int)
+    random_access_iterator<T, Difference, Pointer, Reference> operator--(int)
     {
-        return random_access_iterator<T, Distance, Pointer, Reference>{ptr_--};
+        return random_access_iterator<T, Difference, Pointer, Reference>{
+            ptr_--};
     }
-    random_access_iterator<T, Distance, Pointer, Reference> &operator--()
+    random_access_iterator<T, Difference, Pointer, Reference> &operator--()
     {
         return *this -= 1;
     }
@@ -171,15 +173,15 @@ public:
     pointer operator->() const { return ptr_; }
 
     friend difference_type operator-(
-        const random_access_iterator<T, Distance, Pointer, Reference> &it1,
-        const random_access_iterator<T, Distance, Pointer, Reference> &it2)
+        const random_access_iterator<T, Difference, Pointer, Reference> &it1,
+        const random_access_iterator<T, Difference, Pointer, Reference> &it2)
     {
         return it1.ptr_ - it2.ptr_;
     }
 
     friend bool operator==(
-        const random_access_iterator<T, Distance, Pointer, Reference> &it1,
-        const random_access_iterator<T, Distance, Pointer, Reference> &it2)
+        const random_access_iterator<T, Difference, Pointer, Reference> &it1,
+        const random_access_iterator<T, Difference, Pointer, Reference> &it2)
     {
         return it1.ptr_ == it2.ptr_;
     }
@@ -187,73 +189,73 @@ public:
     reference operator[](size_type n) const { return ptr_[n]; }
 };
 
-template <typename T, typename Distance = std::size_t, typename Pointer = T *,
-          typename Reference = T &>
+template <typename T, typename Difference = std::ptrdiff_t,
+          typename Pointer = T *, typename Reference = T &>
 bool operator!=(
-    const random_access_iterator<T, Distance, Pointer, Reference> &it1,
-    const random_access_iterator<T, Distance, Pointer, Reference> &it2)
+    const random_access_iterator<T, Difference, Pointer, Reference> &it1,
+    const random_access_iterator<T, Difference, Pointer, Reference> &it2)
 {
     return !(it1 == it2);
 }
 
-template <typename T, typename Distance = std::size_t, typename Pointer = T *,
-          typename Reference = T &>
+template <typename T, typename Difference = std::ptrdiff_t,
+          typename Pointer = T *, typename Reference = T &>
 bool operator>(
-    const random_access_iterator<T, Distance, Pointer, Reference> &it1,
-    const random_access_iterator<T, Distance, Pointer, Reference> &it2)
+    const random_access_iterator<T, Difference, Pointer, Reference> &it1,
+    const random_access_iterator<T, Difference, Pointer, Reference> &it2)
 {
     return it1 - it2 > 0;
 }
 
-template <typename T, typename Distance = std::size_t, typename Pointer = T *,
-          typename Reference = T &>
+template <typename T, typename Difference = std::ptrdiff_t,
+          typename Pointer = T *, typename Reference = T &>
 bool operator<(
-    const random_access_iterator<T, Distance, Pointer, Reference> &it1,
-    const random_access_iterator<T, Distance, Pointer, Reference> &it2)
+    const random_access_iterator<T, Difference, Pointer, Reference> &it1,
+    const random_access_iterator<T, Difference, Pointer, Reference> &it2)
 {
     return it1 - it2 < 0;
 }
 
-template <typename T, typename Distance = std::size_t, typename Pointer = T *,
-          typename Reference = T &>
+template <typename T, typename Difference = std::ptrdiff_t,
+          typename Pointer = T *, typename Reference = T &>
 bool operator>=(
-    const random_access_iterator<T, Distance, Pointer, Reference> &it1,
-    const random_access_iterator<T, Distance, Pointer, Reference> &it2)
+    const random_access_iterator<T, Difference, Pointer, Reference> &it1,
+    const random_access_iterator<T, Difference, Pointer, Reference> &it2)
 {
     return it1 - it2 >= 0;
 }
 
-template <typename T, typename Distance = std::size_t, typename Pointer = T *,
-          typename Reference = T &>
+template <typename T, typename Difference = std::ptrdiff_t,
+          typename Pointer = T *, typename Reference = T &>
 bool operator<=(
-    const random_access_iterator<T, Distance, Pointer, Reference> &it1,
-    const random_access_iterator<T, Distance, Pointer, Reference> &it2)
+    const random_access_iterator<T, Difference, Pointer, Reference> &it1,
+    const random_access_iterator<T, Difference, Pointer, Reference> &it2)
 {
     return it1 - it2 <= 0;
 }
 
-template <typename T, typename Distance = std::size_t, typename Pointer = T *,
-          typename Reference = T &>
-random_access_iterator<T, Distance, Pointer, Reference>
-operator+(random_access_iterator<T, Distance, Pointer, Reference> it,
+template <typename T, typename Difference = std::ptrdiff_t,
+          typename Pointer = T *, typename Reference = T &>
+random_access_iterator<T, Difference, Pointer, Reference>
+operator+(random_access_iterator<T, Difference, Pointer, Reference> it,
           std::size_t n)
 {
     return it += n;
 }
 
-template <typename T, typename Distance = std::size_t, typename Pointer = T *,
-          typename Reference = T &>
-random_access_iterator<T, Distance, Pointer, Reference>
+template <typename T, typename Difference = std::ptrdiff_t,
+          typename Pointer = T *, typename Reference = T &>
+random_access_iterator<T, Difference, Pointer, Reference>
 operator+(std::size_t n,
-          random_access_iterator<T, Distance, Pointer, Reference> it)
+          random_access_iterator<T, Difference, Pointer, Reference> it)
 {
     return it += n;
 }
 
-template <typename T, typename Distance = std::size_t, typename Pointer = T *,
-          typename Reference = T &>
-random_access_iterator<T, Distance, Pointer, Reference>
-operator-(random_access_iterator<T, Distance, Pointer, Reference> it,
+template <typename T, typename Difference = std::ptrdiff_t,
+          typename Pointer = T *, typename Reference = T &>
+random_access_iterator<T, Difference, Pointer, Reference>
+operator-(random_access_iterator<T, Difference, Pointer, Reference> it,
           std::size_t n)
 {
     return it -= n;
