@@ -19,27 +19,6 @@ namespace Matrices {
 
 namespace internal {
 
-template <typename T> T *safe_copy(const T *src, std::size_t sz)
-{
-    T *dst = static_cast<T *>(::operator new(sizeof(T) * sz));
-    std::size_t used = 0;
-    try
-    {
-        for (std::size_t i = 0; i < sz; ++i)
-        {
-            new (dst + i) T(src[i]);
-            ++used;
-        }
-    } catch (...)
-    {
-        for (std::size_t i = 0; i < used; ++i)
-            (dst + i)->~T();
-        ::operator delete(dst, sizeof(T) * sz);
-        throw;
-    }
-    return dst;
-}
-
 template <typename T> concept matrix_like = requires(T t)
 {
     {
@@ -104,9 +83,22 @@ protected:
                            : static_cast<T *>(::operator new(sizeof(T) * sz_)))
     {}
 
-    matrix_buff(const matrix_buff &m)
-        : sz_(m.sz_), used_(m.used_), data_(safe_copy(m.data_, m.sz_))
-    {}
+    matrix_buff(const matrix_buff &m) : matrix_buff(m.sz_)
+    {
+        assert(m.used_ == m.sz_);
+        try
+        {
+            for (std::size_t i = 0; i < sz_; ++i)
+            {
+                construct(data_ + i, m.data_[i]);
+                ++used_;
+            }
+        } catch (...)
+        {
+            this->~matrix_buff();
+            throw;
+        }
+    }
 
     matrix_buff(matrix_buff &&m) noexcept
         : sz_(m.sz_), used_(m.used_), data_(m.data_)
