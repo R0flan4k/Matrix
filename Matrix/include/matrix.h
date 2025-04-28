@@ -102,7 +102,9 @@ protected:
 
     matrix_buff(matrix_buff &&m) noexcept
         : sz_(m.sz_), used_(m.used_), data_(m.data_)
-    {}
+    {
+        m.data_ = nullptr; // To avoid double global operator delete.
+    }
 
     matrix_buff &operator=(const matrix_buff &m)
     {
@@ -507,6 +509,28 @@ public:
     }
 
 public:
+    matrix_t(const matrix_t &) = default;
+
+    matrix_t(matrix_t &&) noexcept = default;
+
+    matrix_t &operator=(const matrix_t &oth)
+    {
+        if (&oth == this)
+            return *this;
+        n_ = oth.rank();
+        internal::matrix_buff<T>::operator=(oth);
+        return *this;
+    }
+
+    matrix_t &operator=(matrix_t &&oth) noexcept
+    {
+        if (&oth == this)
+            return *this;
+        n_ = oth.rank();
+        internal::matrix_buff<T>::operator=(std::move(oth));
+        return *this;
+    }
+
     virtual ~matrix_t() = default;
 };
 
