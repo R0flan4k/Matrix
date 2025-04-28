@@ -1,11 +1,11 @@
-#include "matrix_wrap.h"
+#include "matrix.h"
 
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
 #include <vector>
 
-using matrix_t = typename Matrices::matrix_wrap_t<double>;
+using matrix_t = typename Matrices::matrix_t<double>;
 
 int main()
 {
