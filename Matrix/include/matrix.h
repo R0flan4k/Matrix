@@ -53,7 +53,7 @@ template <class U, class T> concept t_like = std::is_convertible<U, T>::value;
 
 template <typename T> concept pointer = std::is_pointer_v<T>;
 
-template <internal::matrix_elem T> class matrix_buff {
+template <typename T> class matrix_buff {
 protected:
     std::size_t sz_;
     std::size_t used_;
@@ -290,7 +290,7 @@ public:
 };
 
 template <internal::matrix_elem T>
-class matrix_t final : private internal::matrix_buff<T> {
+class matrix_t : private internal::matrix_buff<T> {
 protected:
     using internal::matrix_buff<T>::data_;
     using internal::matrix_buff<T>::sz_;
@@ -335,8 +335,8 @@ public:
         assert(used_ == sz_);
     }
 
-    template <std::forward_iterator RandIt>
-    matrix_t(RandIt start, RandIt fin)
+    template <std::forward_iterator FwdIt>
+    matrix_t(FwdIt start, FwdIt fin)
         : internal::matrix_buff<T>(std::distance(start, fin)),
           n_(std::sqrt(std::distance(start, fin)))
     {
@@ -348,12 +348,14 @@ public:
         assert(used_ == sz_);
     }
 
-    matrix_t &operator=(const std::initializer_list<T> &inpt)
+    template <typename U>
+    requires std::is_convertible_v<U, T> matrix_t &
+    operator=(const std::initializer_list<U> &inpt)
     {
         if (inpt.size() != sz_)
             throw MatrExcepts::wrong_init_list(
                 "Wrong size of initializer list.");
-        std::move(inpt.cbegin(), inpt.cend(), data_);
+        std::move(inpt.begin(), inpt.end(), data_);
         assert(used_ == sz_);
         return *this;
     }
@@ -449,7 +451,7 @@ protected:
         return transform_coeff;
     }
 
-public:
+protected:
     int make_echelon_form()
     {
         int transform_coeff = 1;
@@ -503,6 +505,9 @@ public:
             return T(1);
         return calculate_det_echelon();
     }
+
+public:
+    virtual ~matrix_t() = default;
 };
 
 } // namespace Matrices

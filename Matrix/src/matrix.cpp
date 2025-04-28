@@ -1,11 +1,11 @@
-#include "matrix.h"
+#include "matrix_wrap.h"
 
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
 #include <vector>
 
-using Matrices::matrix_t;
+using matrix_t = typename Matrices::matrix_wrap_t<double>;
 
 int main()
 {
@@ -29,7 +29,7 @@ int main()
 
     try
     {
-        const matrix_t<double> matr(input.cbegin(), input.cend());
+        const matrix_t matr(input.cbegin(), input.cend());
         std::cout << matr.calculate_det() << std::endl;
     } catch (const MatrExcepts::matrix_error &me)
     {
